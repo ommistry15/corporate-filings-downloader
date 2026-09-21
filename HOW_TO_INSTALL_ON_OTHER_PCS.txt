@@ -1,0 +1,317 @@
+================================================================================
+  CORPORATE FILINGS DOWNLOADER  -  HOW TO INSTALL ON OTHER PCs
+================================================================================
+
+This guide explains how to get Corporate Filings Downloader running on any
+other Windows computer. There is NOTHING to "install" in the usual sense: the
+whole program is one file (CorporateFilingsDownloader.exe). You copy it over
+and double-click it.
+
+You do NOT need: Python, admin rights, an installer, or a GitHub account.
+You DO need:     an internet connection (it downloads documents from the web).
+
+
+--------------------------------------------------------------------------------
+  1. WHAT YOU NEED (REQUIREMENTS)
+--------------------------------------------------------------------------------
+
+  * Windows 10 or Windows 11, 64-bit.
+      - Windows 7 / 8 / 8.1 are NOT supported.
+      - 32-bit Windows is NOT supported.
+      - Not sure? Press the Windows key, type "About your PC", open it and look
+        for "System type: 64-bit operating system".
+  * About 60 MB of free disk space for the program, plus room for whatever you
+    download (a full set of documents for one company is usually a few
+    hundred MB at most).
+  * An internet connection that can reach screener.in, bseindia.com and
+    nseindia.com.
+
+
+--------------------------------------------------------------------------------
+  2. WHAT'S IN THE DOWNLOAD
+--------------------------------------------------------------------------------
+
+  CorporateFilingsDownloader-vX.Y.Z-windows-x64.zip
+    |
+    +-- CorporateFilingsDownloader.exe      <- the program (this is all you need)
+    +-- HOW_TO_INSTALL_ON_OTHER_PCS.txt     <- this file
+    +-- LICENSE                             <- the software license
+
+
+--------------------------------------------------------------------------------
+  3. INSTALLING - STEP BY STEP
+--------------------------------------------------------------------------------
+
+  STEP 1 - Get the zip file onto the other PC
+  -------------------------------------------
+  Use whichever is easiest:
+
+    a) USB stick / external drive  - most reliable. Copy the .zip across.
+    b) Cloud link (Google Drive, OneDrive, Dropbox) - share a link and
+       download it on the other PC.
+    c) Direct from GitHub - open the project's "Releases" page and download
+       the .zip listed under "Assets".
+
+  TIP: Don't email it as an attachment. Gmail, Outlook and most company mail
+  systems block or silently strip .exe files, even inside a .zip.
+
+  STEP 2 - Extract the zip (important!)
+  -------------------------------------
+    1. Right-click the .zip file  ->  "Extract All..."  ->  "Extract".
+    2. Open the new folder that appears.
+
+  Do NOT run the .exe from inside the zip preview. Windows will let you
+  double-click it there, but it can fail or behave oddly. Always extract first.
+
+  STEP 3 - Put the folder somewhere sensible
+  ------------------------------------------
+  Move the extracted folder to a place you can freely write to, for example:
+
+        C:\Users\<your name>\Documents\CorporateFilingsDownloader
+
+  Why this matters: by default the program creates an "output" folder NEXT TO
+  the .exe and saves all downloads there.
+
+    * AVOID  C:\Program Files  and  C:\Windows  - Windows blocks normal users
+      from writing there, so downloads would fail. (You can still pick another
+      save folder inside the app, but it's simpler to avoid the problem.)
+    * AVOID  running it straight from a slow network drive.
+    * A OneDrive-synced folder works, but OneDrive will try to upload every
+      PDF as it arrives, which can slow things down.
+
+  STEP 4 - Double-click CorporateFilingsDownloader.exe
+  ----------------------------------------------------
+    * The FIRST launch can take 5-15 seconds before the window appears. The
+      program unpacks itself into a temporary folder each time it starts;
+      antivirus scanning makes the very first launch slower. Be patient and
+      don't double-click repeatedly.
+    * Windows will probably show a blue "Windows protected your PC" box
+      (see STEP 5 - this is normal).
+
+  STEP 5 - If you see "Windows protected your PC" (SmartScreen)
+  -------------------------------------------------------------
+  This appears because the program is new and not digitally signed with a
+  paid code-signing certificate. It does NOT mean the file is infected.
+
+    1. Click the small text "More info".
+    2. Click the "Run anyway" button that appears.
+
+  You only have to do this once per copy of the file.
+
+  If you'd like proof that your copy is exactly the file that was published,
+  see section 4 (verifying the download).
+
+  STEP 6 (optional) - Make it easy to find
+  ----------------------------------------
+    * Right-click CorporateFilingsDownloader.exe -> "Show more options" ->
+      "Send to" -> "Desktop (create shortcut)".
+    * Or right-click it -> "Pin to taskbar" / "Pin to Start".
+
+  That's the whole installation.
+
+
+--------------------------------------------------------------------------------
+  4. VERIFYING YOUR DOWNLOAD (OPTIONAL BUT RECOMMENDED)
+--------------------------------------------------------------------------------
+
+  Every release publishes a file called SHA256SUMS.txt listing the SHA-256
+  "fingerprint" of the .exe and the .zip. If the fingerprint of your copy
+  matches, the file is identical to the one that was published.
+
+    1. Open the folder that contains the file.
+    2. Click the address bar, type  powershell  and press Enter.
+    3. Run:
+
+         Get-FileHash .\CorporateFilingsDownloader.exe -Algorithm SHA256
+
+    4. Compare the long "Hash" value with the line for
+       CorporateFilingsDownloader.exe in SHA256SUMS.txt (case doesn't matter).
+
+  If they DON'T match, don't run it - re-download it.
+
+  (Note: the fingerprint of the .exe is different for every new release, so
+  always compare against the SHA256SUMS.txt from the SAME release.)
+
+
+--------------------------------------------------------------------------------
+  5. USING THE PROGRAM (QUICK GUIDE)
+--------------------------------------------------------------------------------
+
+    1. COMPANY NAME    Type the company's name, e.g.  Reliance Industries,
+                       Infosys, Swiggy. It doesn't need to be exact.
+    2. WHAT TO DOWNLOAD
+                       Tick the document types you want and use the  -  and  +
+                       buttons to choose how many years back to go:
+
+                         Annual Reports          (default 10 years)
+                         DRHP (IPO prospectus)   (one-time; only recent IPOs)
+                         Concall Transcripts     (default 4 years)
+                         Investor Presentations  (default 4 years)
+                         Credit Ratings          (default 2 years)
+
+    3. SAVE TO FOLDER  Leave as is, or click  ...  to choose another folder.
+    4. PREVIEW ONLY    Tick this to list what WOULD be downloaded without
+                       actually downloading anything.
+    5. DOWNLOAD        Click it and watch the PROGRESS box.
+    6. OPEN FOLDER     Opens the save folder when the run finishes.
+
+  Where the files go:
+
+      <save folder>\<Company>\Annual_Reports\
+      <save folder>\<Company>\DRHP\
+      <save folder>\<Company>\Concall_Transcripts\
+      <save folder>\<Company>\Investor_Presentations\
+      <save folder>\<Company>\Credit_Ratings\
+      <save folder>\<Company>\failed_downloads.log   (only if something failed)
+
+  Files are named automatically, e.g.  Reliance_AR_2026.pdf,
+  Reliance_CC_Q4FY26.pdf, Reliance_CR_2026-07-03.pdf. Files that already exist
+  are skipped, so it is safe to run the same company again to top up.
+
+  "SEARCH INITIATING COVERAGE" opens a web search in your browser. Broker
+  "initiating coverage" reports are not downloaded automatically (they are
+  usually paywalled and copyrighted by the broker).
+
+  IT IS MEANT TO BE SLOW-ISH: the program deliberately waits 1-3 seconds
+  between requests so it doesn't hammer the websites. A full download for one
+  company can take several minutes. That is normal.
+
+
+--------------------------------------------------------------------------------
+  6. IF YOUR ANTIVIRUS BLOCKS OR DELETES THE FILE
+--------------------------------------------------------------------------------
+
+  Programs built with PyInstaller (a common way of turning Python programs
+  into a single .exe) are sometimes flagged by antivirus software as a "false
+  positive", especially when they are new and unsigned. If yours does:
+
+    Windows Security (Microsoft Defender):
+      1. Open Windows Security -> Virus & threat protection ->
+         Protection history.
+      2. Find the item, click it, choose Actions -> "Allow on device" or
+         "Restore".
+      3. To stop it happening again, go to Virus & threat protection ->
+         "Manage settings" -> "Exclusions" -> "Add or remove exclusions" ->
+         "Add an exclusion" -> Folder, and pick the folder that contains the
+         .exe.
+
+    Other antivirus products: look for "quarantine", "restore" and
+    "exclusions" / "exceptions" in their settings.
+
+  Only do this if you got the file from a source you trust and its fingerprint
+  matches (section 4). If you'd rather not, you can run the program from
+  source code instead - see section 9.
+
+
+--------------------------------------------------------------------------------
+  7. TROUBLESHOOTING
+--------------------------------------------------------------------------------
+
+  PROBLEM: Nothing happens when I double-click.
+    * Wait up to 15-20 seconds on the first launch.
+    * Check Task Manager (Ctrl+Shift+Esc) for "CorporateFilingsDownloader". If
+      it's listed but no window shows, end it and try again.
+    * Make sure you extracted the zip first (STEP 2).
+    * Make sure your antivirus didn't quarantine it (section 6).
+
+  PROBLEM: "Windows protected your PC" and no "Run anyway" button.
+    * Click "More info" first - the button only appears after that.
+    * On a work/school PC an administrator may have blocked unsigned programs.
+      That's a policy on that PC; ask IT, or use a personal computer.
+
+  PROBLEM: It says "No documents found. Nothing to do."
+    * Check the spelling, or try a shorter name ("Tata Motors" instead of
+      "Tata Motors Limited").
+    * The websites it reads may be temporarily unreachable - wait a minute
+      and try again. Occasional one-off failures are normal.
+    * Some very new or very small companies have little or nothing published.
+
+  PROBLEM: The status says "Finished with issues".
+    * Read the PROGRESS box. "No documents found" also shows as an issue.
+    * Individual failed files are listed in failed_downloads.log in that
+      company's folder. The most common cause is a dead link on the
+      company's own website (HTTP 404) - nothing the program can fix.
+
+  PROBLEM: DRHP shows "none found".
+    * Expected for most companies. A DRHP is only listed for companies that
+      listed recently. For established companies there simply isn't one.
+    * If it says it "found a link ... but couldn't reach it", the official
+      regulator website (sebi.gov.in) couldn't be reached from your network.
+      Try again later or from a different network.
+
+  PROBLEM: Credit Ratings found 0.
+    * Only companies that have disclosed a credit rating to the exchanges in
+      the chosen period will have any. Try a larger number of years.
+
+  PROBLEM: Errors about being unable to create or write a folder.
+    * The .exe is probably in a protected folder (STEP 3). Click "..." and
+      choose a folder inside Documents, or move the program there.
+
+  PROBLEM: It keeps failing to connect / many timeouts.
+    * Check the PC can open screener.in in a web browser.
+    * VPNs, firewalls and some office networks block these sites.
+    * Behind a proxy? The program normally follows the Windows proxy
+      settings. If yours needs manual setup, set the HTTPS_PROXY environment
+      variable before launching.
+
+  PROBLEM: Text looks like a plain programmer font, not pixel-style.
+    * The pixel fonts are bundled inside the program and load automatically.
+      If they can't, it falls back to a standard font. Everything still works.
+
+  PROBLEM: I need to stop a download that's running.
+    * Close the window. Files already saved stay; partly-downloaded files end
+      in ".part" and are safe to delete.
+
+
+--------------------------------------------------------------------------------
+  8. UPDATING AND UNINSTALLING
+--------------------------------------------------------------------------------
+
+  UPDATING     Download the newer release, extract it, and replace the old
+               CorporateFilingsDownloader.exe with the new one (or just use the
+               new folder). Your "output" folder and its downloads are never
+               touched by the program itself.
+
+  UNINSTALLING There is nothing to uninstall. Delete the folder. The program
+               does not write to the registry, add Start-menu entries or install
+               services. (If it was ever force-closed, a few folders named
+               "_MEI..." may remain in %TEMP%; they are harmless and can be
+               deleted.)
+
+  MOVING       Copy or move the .exe (and your "output" folder, if you want to
+  BETWEEN PCs  keep the downloads) to the other PC. Nothing else is needed.
+
+
+--------------------------------------------------------------------------------
+  9. ALTERNATIVE: RUN FROM SOURCE CODE INSTEAD OF THE .EXE
+--------------------------------------------------------------------------------
+
+  Prefer not to run a downloaded .exe? You can run the same program from its
+  source code (you need Python 3.10 or newer from https://www.python.org/ - tick
+  "Add python.exe to PATH" in the installer):
+
+    1. Download the source code (green "Code" button -> "Download ZIP" on the
+       GitHub page) and extract it.
+    2. Double-click  Run_App.bat  in the extracted folder. The first run sets
+       up everything it needs automatically.
+
+  There is also a command-line version; see README.md in the source code.
+
+
+--------------------------------------------------------------------------------
+  10. GOOD TO KNOW
+--------------------------------------------------------------------------------
+
+  * The program only reads publicly available pages from Screener.in, BSE
+    India, NSE India and SEBI-linked filing pages. It does not log in to
+    anything and never asks for a password.
+  * It is not affiliated with, endorsed by, or connected to any of those
+    websites. Their terms of use apply to how you use their data; please use
+    the program responsibly and for personal research.
+  * Documents are provided as published by the companies and exchanges. This
+    is a download tool, not financial advice.
+  * Website layouts change. If the program stops finding documents for every
+    company, a site has probably changed - check the project page for an
+    updated version.
+
+================================================================================

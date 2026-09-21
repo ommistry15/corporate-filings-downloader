@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Build output (the exe is published as a GitHub Release asset, not committed)
+build/
+dist/
+release/
+*.pkg
+
+# Downloaded documents / runtime output
+output/
+*.part
+failed_downloads.log
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Binaries are published as GitHub Release assets, never committed
+*.exe
+*.zip

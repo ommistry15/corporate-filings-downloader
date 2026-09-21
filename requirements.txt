@@ -1,0 +1,5 @@
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+# Optional: faster HTML parsing. The tool falls back to Python's built-in
+# html.parser if this isn't installed (the packaged .exe ships without it).
+lxml>=4.9.0

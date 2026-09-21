@@ -1,0 +1,4 @@
+-r requirements.txt
+pyinstaller>=6.0
+# Only needed if you want to regenerate assets/icon.ico via tools/make_icon.py
+pillow>=10.0
