@@ -5,8 +5,8 @@
 # in Explorer / Task Manager instead of an anonymous binary.
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 0, 0, 0),
-    prodvers=(1, 0, 0, 0),
+    filevers=(1, 0, 1, 0),
+    prodvers=(1, 0, 1, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -20,11 +20,11 @@ VSVersionInfo(
         StringTable(
           '040904B0',
           [StringStruct('FileDescription', 'Corporate Filings Downloader'),
-           StringStruct('FileVersion', '1.0.0.0'),
+           StringStruct('FileVersion', '1.0.1.0'),
            StringStruct('InternalName', 'CorporateFilingsDownloader'),
            StringStruct('OriginalFilename', 'CorporateFilingsDownloader.exe'),
            StringStruct('ProductName', 'Corporate Filings Downloader'),
-           StringStruct('ProductVersion', '1.0.0.0'),
+           StringStruct('ProductVersion', '1.0.1.0'),
            StringStruct('LegalCopyright', 'MIT License')])
       ]),
     VarFileInfo([VarStruct('Translation', [1033, 1200])])

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1
+
+- Fix: every company failed with "Could not resolve on Screener". Requests
+  advertised Brotli (`br`) compression, but without the optional `brotli`
+  package it cannot decode Brotli replies, so Screener's search JSON was
+  unreadable. The tool now asks only for gzip/deflate.
+
 ## 1.0.0
 
 First public release.

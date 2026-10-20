@@ -13,7 +13,7 @@
     powershell -ExecutionPolicy Bypass -File build_release.ps1
     powershell -ExecutionPolicy Bypass -File build_release.ps1 -Version 1.1.0
 #>
-param([string]$Version = "1.0.0")
+param([string]$Version = "1.0.1")
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
