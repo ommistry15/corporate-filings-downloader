@@ -1,0 +1,114 @@
+================================================================================
+  CORPORATE FILINGS DOWNLOADER  -  HOW TO INSTALL ON A MAC
+================================================================================
+
+The whole program is one app: "Corporate Filings Downloader.app". You drag it
+into Applications and open it.
+
+You do NOT need: Python, an installer, or a GitHub account.
+You DO need:     macOS 11 (Big Sur) or newer, and an internet connection.
+
+Pick the zip that matches your Mac's chip:
+  * Apple Silicon (M1, M2, M3, M4 ...)  ->  ...-macos-arm64.zip
+  * Older Intel Mac                      ->  ...-macos-x86_64.zip
+  Not sure?  Apple menu  ->  About This Mac  ->  look at "Chip" / "Processor".
+
+
+--------------------------------------------------------------------------------
+  1. INSTALLING - STEP BY STEP
+--------------------------------------------------------------------------------
+
+  STEP 1 - Download and unzip
+    Double-click the .zip in Downloads. A folder appears containing
+    "Corporate Filings Downloader.app".
+
+  STEP 2 - Move it to Applications
+    Drag "Corporate Filings Downloader.app" into the Applications folder
+    (in the Finder sidebar).
+
+  STEP 3 - Open it the first time (Gatekeeper)
+    The app is not signed with a paid Apple Developer certificate, so the
+    first time macOS will say it "cannot be opened" or "cannot verify" it.
+    This does NOT mean it is damaged or infected.
+
+      macOS 15 (Sequoia) and newer:
+        1. Double-click the app, then click "Done" on the warning.
+        2. Open System Settings -> Privacy & Security.
+        3. Scroll down to "Corporate Filings Downloader was blocked" and click
+           "Open Anyway", then confirm.
+
+      macOS 14 (Sonoma) and older:
+        Right-click (or Control-click) the app -> "Open" -> "Open".
+
+    You only have to do this once.
+
+    If macOS instead says the app "is damaged and can't be opened", that is
+    the download quarantine flag. Open Terminal and run:
+
+        xattr -dr com.apple.quarantine "/Applications/Corporate Filings Downloader.app"
+
+    then open the app again.
+
+  STEP 4 (optional) - Keep it in the Dock
+    While it's running, right-click its Dock icon -> Options -> Keep in Dock.
+
+
+--------------------------------------------------------------------------------
+  2. WHERE DOWNLOADS GO
+--------------------------------------------------------------------------------
+
+  By default:   Documents/Corporate Filings Downloader/<Company>/...
+  Change it with the  ...  button next to SAVE TO FOLDER.
+  OPEN FOLDER opens the save folder in Finder.
+
+  The first time it saves into Documents, macOS may ask whether the app may
+  access your Documents folder. Click "Allow".
+
+
+--------------------------------------------------------------------------------
+  3. VERIFYING YOUR DOWNLOAD (OPTIONAL)
+--------------------------------------------------------------------------------
+
+  Each release publishes SHA256SUMS-macos-<chip>.txt. In Terminal:
+
+      shasum -a 256 ~/Downloads/CorporateFilingsDownloader-v*-macos-*.zip
+
+  and compare with the line in that file. If they don't match, re-download.
+
+
+--------------------------------------------------------------------------------
+  4. TROUBLESHOOTING
+--------------------------------------------------------------------------------
+
+  Nothing happens / it bounces in the Dock and quits
+    * Make sure you picked the zip for your chip (arm64 vs x86_64).
+    * Run it from Terminal to see the error:
+        "/Applications/Corporate Filings Downloader.app/Contents/MacOS/CorporateFilingsDownloader"
+
+  "No documents found" / Credit Ratings found 0 / DRHP none found
+    Same causes as on Windows: see HOW_TO_INSTALL_ON_OTHER_PCS.txt, section 7.
+    BSE in particular blocks some networks outright (HTTP 403); that only
+    affects Credit Ratings.
+
+
+--------------------------------------------------------------------------------
+  5. UPDATING AND UNINSTALLING
+--------------------------------------------------------------------------------
+
+  UPDATING     Replace the app in Applications with the newer one.
+  UNINSTALLING Drag the app from Applications to the Bin. Your downloads in
+               Documents are not touched.
+
+
+--------------------------------------------------------------------------------
+  6. ALTERNATIVE: RUN FROM SOURCE
+--------------------------------------------------------------------------------
+
+  Install Python 3.10+ from https://www.python.org/downloads/macos/ (the Python
+  that ships with macOS is 3.9 and too old), download the source code, then
+  double-click  Run_App.command . If macOS refuses to open it, run once in
+  Terminal from the source folder:   chmod +x Run_App.command
+
+  To build the .app yourself:   ./build_release_mac.sh
+
+================================================================================

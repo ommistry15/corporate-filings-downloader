@@ -34,8 +34,9 @@ output/
     DRHP/                    Swiggy_DRHP.pdf
 ```
 
-It ships as a **single Windows `.exe` with a small desktop window** (no Python, no
-command line, nothing to install) and also works as a plain **command-line tool**.
+It runs on **Windows and macOS**: a single Windows `.exe` or a Mac `.app` with a small
+desktop window (no Python, no command line), and also works as a plain
+**command-line tool** on either.
 
 ## Features
 
@@ -57,7 +58,17 @@ command line, nothing to install) and also works as a plain **command-line tool*
 - **Pixel-art UI in a Claude-inspired palette**, with two bundled OFL-licensed fonts
   that are loaded privately, so nothing is installed system-wide.
 
-## Get it (Windows)
+## Get it
+
+| | Windows 10 / 11 (64-bit) | macOS 11+ |
+|---|---|---|
+| Download from [**Releases**](../../releases) | `...-windows-x64.zip` | `...-macos-arm64.zip` (Apple Silicon) / `...-macos-x86_64.zip` (Intel) |
+| Run | `CorporateFilingsDownloader.exe` | `Corporate Filings Downloader.app` |
+| Full guide | [`HOW_TO_INSTALL_ON_OTHER_PCS.txt`](HOW_TO_INSTALL_ON_OTHER_PCS.txt) | [`HOW_TO_INSTALL_ON_MAC.txt`](HOW_TO_INSTALL_ON_MAC.txt) |
+| Run from source | double-click `Run_App.bat` | double-click `Run_App.command` |
+| Build it yourself | `build_release.ps1` | `./build_release_mac.sh` |
+
+### Windows
 
 1. Open the [**Releases**](../../releases) page and download
    `CorporateFilingsDownloader-vX.Y.Z-windows-x64.zip` from **Assets**.
@@ -76,19 +87,39 @@ same file across.
 
 **Requirements:** 64-bit Windows 10 or 11 and an internet connection.
 
+### macOS
+
+1. From [**Releases**](../../releases), download the zip for your chip:
+   `-macos-arm64.zip` for Apple Silicon (M1/M2/M3/M4), `-macos-x86_64.zip` for Intel.
+   (Apple menu -> About This Mac shows which you have.)
+2. Unzip it and drag **`Corporate Filings Downloader.app`** into **Applications**.
+3. The app isn't signed with a paid Apple certificate, so the first launch is blocked
+   once. On macOS 15+: try to open it, then **System Settings -> Privacy & Security ->
+   Open Anyway**. On macOS 14 and older: **right-click the app -> Open -> Open**.
+
+Downloads go to `Documents/Corporate Filings Downloader/` by default. If no Mac zip is
+attached to a release yet, build the app in one command (see
+[Building the Mac `.app`](#building-the-mac-app-yourself)); full details are in
+[`HOW_TO_INSTALL_ON_MAC.txt`](HOW_TO_INSTALL_ON_MAC.txt).
+
+**Requirements:** macOS 11 (Big Sur) or newer and an internet connection.
+
 ## Using the app
 
 1. Enter a **company name**.
 2. Tick the document types you want and set the **years** with `-` / `+`.
-3. Choose a **save folder** (default: an `output` folder next to the `.exe`).
-4. Click **DOWNLOAD** and watch the **PROGRESS** box. Use **OPEN FOLDER** when done.
+3. Choose a **save folder** (default: an `output` folder next to the `.exe` on Windows,
+   `Documents/Corporate Filings Downloader` for the Mac app).
+4. Click **DOWNLOAD** and watch the **PROGRESS** box. Use **OPEN FOLDER** when done
+   (opens Explorer / Finder).
 
 Full downloads are intentionally slow-ish (several minutes for a company with a long
 history) because of the polite delays between requests.
 
 ## Command-line use
 
-The downloader is a normal Python script too. You need Python 3.10+.
+The downloader is a normal Python script too. You need Python 3.10+ (on a Mac, the
+built-in Python 3.9 is too old: install one from python.org, and use `python3`/`pip3`).
 
 ```bash
 pip install -r requirements.txt
@@ -114,9 +145,14 @@ DRHP has no `--years-*` flag: it's a one-time IPO document, so it's either found
 
 ### Run the desktop app from source
 
-Double-click [`Run_App.bat`](Run_App.bat). It creates a local `.venv`, installs the
-dependencies on first run, and opens the window. (Needs Python 3.10+ with Tcl/Tk, which
-the python.org installer includes by default.)
+- **Windows:** double-click [`Run_App.bat`](Run_App.bat).
+- **macOS:** double-click [`Run_App.command`](Run_App.command) (if macOS won't run it,
+  run `chmod +x Run_App.command` once in Terminal).
+
+Either one creates a local `.venv`, installs the dependencies on first run, and opens
+the window. (Needs Python 3.10+ with Tcl/Tk, which the python.org installers include
+by default. On a Mac without it, `Run_App.command` also accepts
+[`uv`](https://docs.astral.sh/uv/) and will fetch a suitable Python itself.)
 
 ## How it works
 
@@ -168,7 +204,22 @@ against [`CorporateFilingsDownloader.spec`](CorporateFilingsDownloader.spec), an
 `release/CorporateFilingsDownloader-v<version>-windows-x64.zip` (exe + install guide +
 license) together with `release/SHA256SUMS.txt`.
 
-To regenerate the app icon: `python tools/make_icon.py` (needs Pillow).
+## Building the Mac `.app` yourself
+
+```bash
+./build_release_mac.sh 1.1.0             # build + zip
+./build_release_mac.sh 1.1.0 --install   # ...and copy it into /Applications
+```
+
+This creates `.venv` if needed, installs `requirements-build.txt`, runs PyInstaller
+against [`CorporateFilingsDownloader-mac.spec`](CorporateFilingsDownloader-mac.spec), and
+writes `release/CorporateFilingsDownloader-v<version>-macos-<arch>.zip` (app + install
+guide + license) with `release/SHA256SUMS-macos-<arch>.txt`. The app is built for the
+chip of the Mac you build on; build once on Apple Silicon and once on Intel to cover
+both. Upload the zip(s) to the GitHub release next to the Windows zip.
+
+To regenerate the app icons (`.ico`, `.png`, `.icns`): `python tools/make_icon.py`
+(needs Pillow).
 
 ### Design notes worth knowing before you change anything
 
@@ -187,6 +238,20 @@ To regenerate the app icon: `python tools/make_icon.py` (needs Pillow).
   `_MEIPASS` is only used for read-only bundled resources (fonts, icon).
 - **UPX compression is off** in the spec: UPX-packed executables trigger antivirus
   heuristics far more often.
+- **macOS differences** live in a few helpers at the top of `gui.py`:
+  - Fonts are registered process-only through CoreText
+    (`CTFontManagerRegisterFontsForURL`, process scope), the Mac counterpart of the
+    Windows GDI trick. This must happen **before** `tk.Tk()` is created: Tk on macOS
+    snapshots the font list at startup.
+  - Aqua ignores colours on a native `tk.Button`, so on macOS buttons are click-bound
+    `tk.Label`s (`_make_button`). Windows still uses real buttons.
+  - Tk on macOS treats 1 pt as 1 px (72 dpi) while Windows uses 96 dpi, so the app sets
+    `tk scaling` to 96/72 on macOS to get the same layout.
+  - Inside a `.app` the executable's folder is read-only, so the default save folder
+    is `~/Documents/Corporate Filings Downloader`.
+  - The Mac spec is a one-folder build wrapped in a `.app` BUNDLE (PyInstaller has
+    deprecated single-file `.app`s). `argv_emulation` stays off so the `--cli-worker`
+    arguments reach the re-invoked binary.
 
 ## Project layout
 
@@ -197,10 +262,14 @@ CorporateFilingsDownloader.spec     PyInstaller build definition
 build_release.ps1                   One-command build + zip + checksums
 version_info.txt                    Windows file-properties metadata for the exe
 HOW_TO_INSTALL_ON_OTHER_PCS.txt     End-user install guide (bundled in the release zip)
-Run_App.bat                         Run the desktop app from source
+Run_App.bat                         Run the desktop app from source (Windows)
+Run_App.command                     Run the desktop app from source (macOS)
+CorporateFilingsDownloader-mac.spec PyInstaller build definition for the Mac .app
+build_release_mac.sh                One-command Mac build + zip + checksums
+HOW_TO_INSTALL_ON_MAC.txt           End-user install guide for Mac (bundled in the Mac zip)
 requirements.txt                    Runtime dependencies
 requirements-build.txt              Build dependencies (adds PyInstaller, Pillow)
-assets/icon.ico, icon.png           App icon
+assets/icon.ico, icon.png, icon.icns App icon (Windows, window, macOS)
 assets/fonts/                       Press Start 2P + VT323 and their OFL licenses
 tools/make_icon.py                  Regenerates the icon
 CHANGELOG.md                        Release notes
@@ -217,11 +286,11 @@ CHANGELOG.md                        Release notes
   `sebi.gov.in` to be reachable from your network.
 - The quarter/FY for concalls is inferred from dates, so an unusual results calendar can
   occasionally misfile a quarter.
-- The `.exe` is **not code-signed**, so Windows SmartScreen and some antivirus tools may
-  warn about it (see the install guide). Every release publishes SHA-256 checksums so you
-  can verify your copy.
-- The desktop app and `.exe` are **Windows-only**. The command-line tool is plain Python
-  and should work anywhere Python 3.10+ does, but has only been tested on Windows.
+- The `.exe` and `.app` are **not code-signed**, so Windows SmartScreen, macOS
+  Gatekeeper and some antivirus tools may warn about them (see the install guides).
+  Every release publishes SHA-256 checksums so you can verify your copy.
+- Supported desktop platforms are **Windows 10/11 and macOS 11+**. On Linux the
+  command-line tool and `python gui.py` should work but are untested.
 
 ## Disclaimer
 
@@ -238,7 +307,7 @@ Released under the [MIT License](LICENSE).
 
 The bundled fonts, [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) and
 [VT323](https://fonts.google.com/specimen/VT323), are licensed under the SIL Open Font
-License 1.1 (license texts in [`assets/fonts/`](assets/fonts)). The `.exe` bundles Python,
+License 1.1 (license texts in [`assets/fonts/`](assets/fonts)). The `.exe` and `.app` bundle Python,
 Tcl/Tk, [Requests](https://requests.readthedocs.io/) and
 [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/), each under its own
 license.

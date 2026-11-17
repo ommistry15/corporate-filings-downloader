@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.0
+
+- **macOS support.** The desktop app now runs on macOS 11+ as a native
+  `Corporate Filings Downloader.app` (built with `build_release_mac.sh` /
+  `CorporateFilingsDownloader-mac.spec`), or from source via `Run_App.command`.
+  - Bundled pixel fonts are registered process-only through CoreText.
+  - Buttons keep their colours on macOS (Aqua ignores them on native buttons).
+  - Same layout as Windows (Tk point scaling matched to 96 dpi).
+  - OPEN FOLDER opens Finder; the window uses the PNG icon; the app has an
+    `.icns` icon.
+  - The Mac app saves to `~/Documents/Corporate Filings Downloader` by default.
+- New `HOW_TO_INSTALL_ON_MAC.txt`; README covers both platforms.
+- Windows: fonts are now registered before the window is created (no visible
+  change).
+
 ## 1.0.1
 
 - Fix: every company failed with "Could not resolve on Screener". Requests

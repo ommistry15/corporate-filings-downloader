@@ -9,3 +9,7 @@
 *.ttf binary
 *.exe binary
 *.zip binary
+*.icns binary
+# macOS shell scripts must keep LF or they won't run
+*.sh text eol=lf
+*.command text eol=lf

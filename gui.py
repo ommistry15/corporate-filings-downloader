@@ -22,6 +22,11 @@ usefully be pointed at a second, separate .py file as a subprocess target.
 Two Google Fonts (Press Start 2P, VT323 - both OFL licensed, bundled under
 assets/fonts/) are loaded privately for this process only, so nothing is
 installed system-wide.
+
+Runs on Windows (source or single-file .exe) and macOS (source or .app
+bundle). Platform differences are kept to a handful of small helpers below:
+font registration, window icon, "open folder", the default save location and
+the button widget (Aqua ignores colors on a native tk.Button).
 """
 
 from __future__ import annotations
@@ -65,6 +70,9 @@ from urllib.parse import quote
 # the .exe actually sits in, via sys.executable, never the temp extraction
 # path (which is deleted when the app closes).
 # --------------------------------------------------------------------------- #
+IS_WINDOWS = os.name == "nt"
+IS_MAC = sys.platform == "darwin"
+
 if getattr(sys, "frozen", False):
     APP_DIR = os.path.dirname(sys.executable)
     RESOURCE_DIR = getattr(sys, "_MEIPASS", APP_DIR)
@@ -72,9 +80,18 @@ else:
     APP_DIR = os.path.dirname(os.path.abspath(__file__))
     RESOURCE_DIR = APP_DIR
 
-DEFAULT_OUTPUT = os.path.join(APP_DIR, "output")
+if IS_MAC and getattr(sys, "frozen", False):
+    # Inside a .app, sys.executable lives in Foo.app/Contents/MacOS, which is
+    # read-only once the app is in /Applications (and would hide downloads
+    # inside the bundle anyway). Save to ~/Documents instead.
+    DEFAULT_OUTPUT = os.path.join(os.path.expanduser("~"), "Documents",
+                                  "Corporate Filings Downloader")
+else:
+    DEFAULT_OUTPUT = os.path.join(APP_DIR, "output")
 FONTS_DIR = os.path.join(RESOURCE_DIR, "assets", "fonts")
 ICON_PATH = os.path.join(RESOURCE_DIR, "assets", "icon.ico")
+ICON_PNG_PATH = os.path.join(RESOURCE_DIR, "assets", "icon.png")
+FALLBACK_FONT = "Menlo" if IS_MAC else "Consolas"
 
 # How to re-invoke this program as a --cli-worker: a frozen exe IS the
 # interpreter (no separate script path to pass); a dev/source run needs its
@@ -116,30 +133,72 @@ DOC_TYPES = [
 
 
 # --------------------------------------------------------------------------- #
-# Private, no-install font loading (Windows GDI trick: AddFontResourceEx with
-# FR_PRIVATE registers the font for this process only; it is auto-released
-# when the process exits).
+# Private, no-install font loading. Both variants register the font for this
+# process only; it is auto-released when the process exits.
+#   Windows: GDI AddFontResourceEx with FR_PRIVATE.
+#   macOS:   CoreText CTFontManagerRegisterFontsForURL, kCTFontManagerScopeProcess.
 # --------------------------------------------------------------------------- #
 def _load_private_fonts() -> None:
-    if os.name != "nt":
-        return
-    FR_PRIVATE = 0x10
-    for filename in (DISPLAY_FONT_FILE, MONO_FONT_FILE):
-        path = os.path.join(FONTS_DIR, filename)
-        if os.path.isfile(path):
+    paths = [os.path.join(FONTS_DIR, f) for f in (DISPLAY_FONT_FILE, MONO_FONT_FILE)]
+    paths = [p for p in paths if os.path.isfile(p)]
+    if IS_WINDOWS:
+        FR_PRIVATE = 0x10
+        for path in paths:
             try:
                 ctypes.windll.gdi32.AddFontResourceExW(path, FR_PRIVATE, 0)
             except Exception:  # noqa: BLE001 - fonts are a nice-to-have, never fatal
                 pass
+    elif IS_MAC:
+        try:
+            _register_fonts_macos(paths)
+        except Exception:  # noqa: BLE001 - fonts are a nice-to-have, never fatal
+            pass
+
+
+def _register_fonts_macos(paths: list[str]) -> None:
+    cf = ctypes.cdll.LoadLibrary(
+        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation")
+    ct = ctypes.cdll.LoadLibrary(
+        "/System/Library/Frameworks/CoreText.framework/CoreText")
+    vp = ctypes.c_void_p
+    cf.CFURLCreateFromFileSystemRepresentation.restype = vp
+    cf.CFURLCreateFromFileSystemRepresentation.argtypes = [
+        vp, ctypes.c_char_p, ctypes.c_long, ctypes.c_bool]
+    cf.CFRelease.argtypes = [vp]
+    ct.CTFontManagerRegisterFontsForURL.restype = ctypes.c_bool
+    ct.CTFontManagerRegisterFontsForURL.argtypes = [vp, ctypes.c_uint32, vp]
+    kCTFontManagerScopeProcess = 1
+    for path in paths:
+        raw = os.fsencode(path)
+        url = cf.CFURLCreateFromFileSystemRepresentation(None, raw, len(raw), False)
+        if url:
+            ct.CTFontManagerRegisterFontsForURL(url, kCTFontManagerScopeProcess, None)
+            cf.CFRelease(url)
 
 
 def _resolve_fonts(root: tk.Tk) -> tuple[str, str]:
     """Return (display_family, mono_family), falling back to system fonts
     if the bundled pixel fonts didn't register for some reason."""
     available = set(tkfont.families(root))
-    display = DISPLAY_FONT_NAME if DISPLAY_FONT_NAME in available else "Consolas"
-    mono = MONO_FONT_NAME if MONO_FONT_NAME in available else "Consolas"
+    display = DISPLAY_FONT_NAME if DISPLAY_FONT_NAME in available else FALLBACK_FONT
+    mono = MONO_FONT_NAME if MONO_FONT_NAME in available else FALLBACK_FONT
     return display, mono
+
+
+def _make_button(parent, command=None, **kw) -> tk.Widget:
+    """A flat, colorable button. On macOS the native Aqua tk.Button ignores
+    bg/relief entirely (it would render as a grey system button), so a
+    tk.Label that reacts to clicks is used instead. Same options either way."""
+    if not IS_MAC:
+        return tk.Button(parent, command=command, **kw)
+    lbl = tk.Label(parent, **kw)
+
+    def _click(_evt=None) -> None:
+        if command is not None and str(lbl["state"]) != "disabled":
+            command()
+
+    lbl.bind("<ButtonRelease-1>", _click)
+    return lbl
 
 
 # --------------------------------------------------------------------------- #
@@ -153,7 +212,7 @@ class PixelButton(tk.Frame):
         super().__init__(parent, bg=BG)
         self._shadow = tk.Frame(self, bg=INK)
         self._shadow.pack()
-        self.btn = tk.Button(
+        self.btn = _make_button(
             self._shadow, text=text, command=command, font=font,
             bg=bg, fg=fg, activebackground=hover, activeforeground=fg,
             relief="flat", bd=0, padx=padx, pady=pady, cursor="hand2",
@@ -199,7 +258,7 @@ class YearStepper(tk.Frame):
         self.var = tk.IntVar(value=initial)
         self.minv, self.maxv = minv, maxv
 
-        minus = tk.Button(self, text="-", font=mono_font, width=1,
+        minus = _make_button(self, text="-", font=mono_font, width=1,
                           bg=CARD, fg=INK, activebackground=ACCENT_LIGHT,
                           relief="flat", bd=0, highlightthickness=1,
                           highlightbackground=INK, cursor="hand2",
@@ -207,7 +266,7 @@ class YearStepper(tk.Frame):
         self.value_lbl = tk.Label(self, textvariable=self.var, width=2,
                                   font=mono_font, bg=FIELD, fg=INK,
                                   highlightthickness=1, highlightbackground=INK)
-        plus = tk.Button(self, text="+", font=mono_font, width=1,
+        plus = _make_button(self, text="+", font=mono_font, width=1,
                          bg=CARD, fg=INK, activebackground=ACCENT_LIGHT,
                          relief="flat", bd=0, highlightthickness=1,
                          highlightbackground=INK, cursor="hand2",
@@ -251,16 +310,18 @@ def pixel_rule(parent, height=4, block=5):
 # --------------------------------------------------------------------------- #
 class App(tk.Tk):
     def __init__(self):
-        super().__init__()
+        # Register fonts BEFORE the Tk root exists: Tk on macOS snapshots the
+        # font family list at startup and never sees later registrations.
         _load_private_fonts()
+        super().__init__()
 
         self.title("Corporate Filings Downloader")
         self.configure(bg=BG)
-        if os.path.isfile(ICON_PATH):
-            try:
-                self.iconbitmap(ICON_PATH)
-            except tk.TclError:
-                pass
+        if IS_MAC:
+            # Tk on macOS maps 1pt = 1px (72 dpi); Windows uses 96 dpi. Match
+            # Windows so the point-sized pixel fonts fill the same layout.
+            self.tk.call("tk", "scaling", 96 / 72)
+        self._set_icon()
         self.minsize(400, 600)
         self.geometry("420x640")
 
@@ -407,6 +468,16 @@ class App(tk.Tk):
         self.log_text.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
 
+    def _set_icon(self) -> None:
+        try:
+            if IS_WINDOWS and os.path.isfile(ICON_PATH):
+                self.iconbitmap(ICON_PATH)
+            elif os.path.isfile(ICON_PNG_PATH):
+                self._icon_img = tk.PhotoImage(file=ICON_PNG_PATH)
+                self.iconphoto(True, self._icon_img)
+        except tk.TclError:
+            pass
+
     # ------------------------------------------------------------- actions
     def _browse(self) -> None:
         chosen = filedialog.askdirectory(initialdir=self.output_dir.get() or APP_DIR)
@@ -415,8 +486,14 @@ class App(tk.Tk):
 
     def _open_folder(self) -> None:
         path = self.output_dir.get()
-        if os.path.isdir(path):
-            os.startfile(path)  # Windows
+        if not os.path.isdir(path):
+            return
+        if IS_WINDOWS:
+            os.startfile(path)
+        elif IS_MAC:
+            subprocess.Popen(["open", path])
+        else:
+            subprocess.Popen(["xdg-open", path])
 
     def _search_initiating_coverage(self) -> None:
         company = self.company_entry.get().strip()
@@ -473,7 +550,7 @@ class App(tk.Tk):
 
     def _run_worker(self, cmd: list[str]) -> None:
         try:
-            creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+            creationflags = subprocess.CREATE_NO_WINDOW if IS_WINDOWS else 0
             proc = subprocess.Popen(
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 text=True, encoding="utf-8", errors="replace",

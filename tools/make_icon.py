@@ -1,4 +1,4 @@
-"""Regenerates assets/icon.ico and assets/icon.png (pixel-art document + download arrow).
+"""Regenerates assets/icon.ico, assets/icon.png and assets/icon.icns (macOS) (pixel-art document + download arrow).
 
 Run from the repo root:  python tools/make_icon.py   (needs Pillow)
 
@@ -58,6 +58,16 @@ def main():
                   append_images=[frame16, base32, frame48])
     frame256.save(os.path.join(ASSETS, "icon.png"))
     print("wrote", os.path.normpath(ico_path))
+    write_icns(base32)
+
+
+def write_icns(base32):
+    """macOS app icon. Pillow builds the .icns from one large image (it
+    downsamples for the small slots), so start from a NEAREST 1024px upscale
+    of the 32px design to keep the pixel edges crisp."""
+    icns_path = os.path.join(ASSETS, "icon.icns")
+    base32.resize((1024, 1024), Image.NEAREST).save(icns_path, format="ICNS")
+    print("wrote", os.path.normpath(icns_path))
 
 
 if __name__ == "__main__":
